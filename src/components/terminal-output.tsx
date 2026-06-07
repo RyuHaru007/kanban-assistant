@@ -1,8 +1,9 @@
 "use client";
 
-import { Terminal } from "lucide-react";
+import { Terminal, CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
+import { Button } from "./ui/button";
 
 const LOG_LINES = [
   "Initializing sandbox environment...",
@@ -15,8 +16,9 @@ const LOG_LINES = [
   "Tests Passed: 14/14"
 ];
 
-export function TerminalOutput({ isResolved }: { isResolved?: boolean }) {
+export function TerminalOutput({ isResolved, onAction }: { isResolved?: boolean; onAction?: (action: string) => void }) {
   const [lines, setLines] = useState<string[]>(isResolved ? LOG_LINES : []);
+  const isDone = lines.length === LOG_LINES.length;
 
   useEffect(() => {
     if (isResolved && lines.length === LOG_LINES.length) return;
@@ -81,6 +83,32 @@ export function TerminalOutput({ isResolved }: { isResolved?: boolean }) {
           )}
         </div>
       </ScrollArea>
+      {isDone && !isResolved && onAction && (
+        <div className="flex gap-2 p-3 border-t border-border/50 bg-[#161B22]">
+          <Button
+            size="sm"
+            onClick={() => onAction('approved')}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            Continue to PR
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => onAction('rejected')}
+            className="flex-1"
+          >
+            <XCircle className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+        </div>
+      )}
+      {isResolved && (
+        <div className="p-2 text-center text-xs font-mono text-muted-foreground bg-[#161B22] border-t border-border/50">
+          Sandbox execution completed.
+        </div>
+      )}
     </div>
   );
 }

@@ -1,13 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { lastAssistantMessageIsCompleteWithToolCalls, DefaultChatTransport } from "ai";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { JiraTicket } from "@/lib/mock-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Bot, User, Loader2 } from "lucide-react";
+import { Send, Bot, User, Loader2, Code } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PrApproval } from "./pr-approval";
 import { TerminalOutput } from "./terminal-output";
@@ -22,6 +22,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
   const [input, setInput] = useState('');
+  const [handoffAnnouncement, setHandoffAnnouncement] = useState(false);
   const initializedTicketId = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +55,8 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
           details: { tool: 'proposePullRequest', repo: (toolCall as any).args?.repo || 'Unknown repo' },
         });
       }
-    }
+    },
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   });
 
   const isLoading = chatStatus !== 'ready' && chatStatus !== 'error';
@@ -110,9 +112,26 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
     setInput('');
   };
 
+  useEffect(() => {
+    if (!open) {
+      setHandoffAnnouncement(false);
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-[85vh] p-0 flex flex-col gap-0 overflow-hidden shadow-2xl" showCloseButton={true}>
+        {handoffAnnouncement && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center justify-center p-8 bg-card border border-border shadow-2xl rounded-2xl animate-in slide-in-from-bottom-4 fade-in duration-500">
+              <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+                <Code className="w-8 h-8 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Handed off to VS Code</h3>
+              <p className="text-sm text-muted-foreground">Spinning up local workspace...</p>
+            </div>
+          </div>
+        )}
         <DialogHeader className="p-4 border-b bg-muted/30 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <span className="font-mono text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">
@@ -163,7 +182,15 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                       const toolName = part.type.replace('tool-', '');
                       const toolCallId = part.toolCallId;
                       if (toolName === 'executeSandboxBuild') {
-                        return <TerminalOutput key={toolCallId} isResolved={part.state === 'output-available'} />;
+                        return (
+                          <TerminalOutput
+                            key={toolCallId}
+                            isResolved={part.state === 'output-available'}
+                            onAction={(action) => {
+                              addToolResult({ tool: toolName, toolCallId, output: `Sandbox execution completed. Tests Passed: 14/14. User decision: ${action}` } as any);
+                            }}
+                          />
+                        );
                       }
 
                       if (toolName === 'proposePullRequest') {
@@ -175,6 +202,11 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                             fileChanges={part.input?.fileChanges as any}
                             status={(part.state === 'output-available' ? part.output : 'pending') as any}
                             onAction={(action) => {
+                              if (action === 'handoff') {
+                                setHandoffAnnouncement(true);
+                                setTimeout(() => onOpenChange(false), 2000);
+                                return;
+                              }
                               addToolResult({ tool: toolName, toolCallId, output: action } as any);
                               addAuditLog({
                                 actor: 'Developer',
@@ -182,11 +214,6 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                                 status: action === 'approved' ? 'Approved' : 'Rejected',
                                 details: { tool: 'proposePullRequest', decision: action, repo: part.input?.repo },
                               });
-                              
-                              // Force a round trip so the agent can reply!
-                              setTimeout(() => {
-                                sendMessage({ text: action.startsWith('Modify') ? action : `System: PR was ${action}` } as any);
-                              }, 100);
                             }}
                           />
                         );

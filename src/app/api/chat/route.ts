@@ -19,7 +19,9 @@ You have access to the following tools:
 1. getConfluenceContext: Use this to search for architectural guidelines, auth rules, or rate limiting docs.
 2. executeSandboxBuild: Use this to run an ephemeral sandbox build. You MUST always call executeSandboxBuild to verify your code before calling proposePullRequest.
 3. draftImplementationPlan: Use this to provide a step-by-step technical plan for the user's issue.
-4. proposePullRequest: Use this when the user is ready to create a PR. YOU MUST populate the 'fileChanges' array with the 'fileName', 'originalCode', and 'newCode' so the UI can render a code diff. DO NOT use legacy fields like 'codeChanges'.`;
+4. proposePullRequest: Use this when the user is ready to create a PR. YOU MUST populate the 'fileChanges' array with the 'fileName', 'originalCode', and 'newCode' so the UI can render a code diff. DO NOT use legacy fields like 'codeChanges'.
+
+EXTREMELY IMPORTANT: DO NOT chain these tools automatically in a single turn! After using 'getConfluenceContext' or 'draftImplementationPlan', you MUST stop and ask the user for permission to proceed. Wait for their explicit reply before calling the next tool!`;
 
   const modelMessages = await convertToModelMessages(messages);
 
@@ -35,10 +37,6 @@ You have access to the following tools:
         inputSchema: z.object({
           repo: z.string().describe('The GitHub repository name.'),
         }),
-        execute: async ({ repo }: { repo: string }) => {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          return `Sandbox execution completed for ${repo}. Tests Passed: 14/14.`;
-        },
       }),
       getConfluenceContext: tool({
         description: 'Search unstructured Confluence data for a specific topic (e.g., "Authentication", "Rate Limiting").',

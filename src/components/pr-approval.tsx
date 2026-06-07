@@ -98,6 +98,7 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
                           description: "Spinning up a localized Reltio Brain session in VS Code...",
                           icon: <Code className="h-4 w-4 text-blue-400" />,
                         });
+                        onAction('handoff');
                       }}
                       className="w-full opacity-60 border-dashed border-border/50 bg-secondary/30 hover:opacity-100 hover:bg-secondary/50 transition-all"
                     >
