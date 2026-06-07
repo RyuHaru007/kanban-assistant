@@ -42,14 +42,14 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
           actor: 'Agent',
           actionType: 'RAG_RETRIEVAL',
           status: 'Success',
-          details: { topic: (toolCall.args as any)?.topic || 'Unknown topic' },
+          details: { topic: (toolCall as any).args?.topic || 'Unknown topic' },
         });
       } else if (toolCall.toolName === 'proposePullRequest') {
         addAuditLog({
           actor: 'Agent',
           actionType: 'TOOL_CALL',
           status: 'Pending_Human',
-          details: { tool: 'proposePullRequest', repo: (toolCall.args as any)?.repo || 'Unknown repo' },
+          details: { tool: 'proposePullRequest', repo: (toolCall as any).args?.repo || 'Unknown repo' },
         });
       }
     }
@@ -62,7 +62,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
     if (open && ticket && initializedTicketId.current !== ticket.id) {
       initializedTicketId.current = ticket.id;
       const savedMessages = getChat(ticket.id);
-      
+
       if (savedMessages && savedMessages.length > 0) {
         setMessages(savedMessages);
       } else {
@@ -140,8 +140,8 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                         <div
                           key={`text-${index}`}
                           className={`p-3 rounded-2xl ${m.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted/50 border shadow-sm"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/50 border shadow-sm"
                             }`}
                         >
                           {part.text}
