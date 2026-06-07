@@ -15,7 +15,7 @@ ${ticketContext}
 You have access to the following tools:
 1. getConfluenceContext: Use this to search for architectural guidelines, auth rules, or rate limiting docs.
 2. draftImplementationPlan: Use this to provide a step-by-step technical plan for the user's issue.
-3. proposePullRequest: Use this when the user is ready to create a PR. This will pause and ask for the user's approval.`;
+3. proposePullRequest: Use this when the user is ready to create a PR. YOU MUST populate the 'fileChanges' array with the 'fileName', 'originalCode', and 'newCode' so the UI can render a code diff. DO NOT use legacy fields like 'codeChanges'.`;
 
   const modelMessages = await convertToModelMessages(messages);
 
@@ -23,6 +23,7 @@ You have access to the following tools:
     model: openai('gpt-4o'),
     messages: modelMessages,
     system: systemPrompt,
+    maxSteps: 5,
     // @ts-ignore - Bypass AI SDK strict typing for prototype
     tools: {
       getConfluenceContext: tool({

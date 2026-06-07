@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { JiraTicket } from "@/lib/mock-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -101,19 +101,19 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl p-0 flex flex-col gap-0 border-l border-border/50 shadow-2xl">
-        <SheetHeader className="p-4 border-b bg-muted/30">
-          <SheetTitle className="flex items-center gap-2">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-[85vh] p-0 flex flex-col gap-0 overflow-hidden shadow-2xl" showCloseButton={true}>
+        <DialogHeader className="p-4 border-b bg-muted/30 shrink-0">
+          <DialogTitle className="flex items-center gap-2">
             <span className="font-mono text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">
               {ticket?.id}
             </span>
             {ticket?.title}
-          </SheetTitle>
-          <SheetDescription className="line-clamp-1">
+          </DialogTitle>
+          <DialogDescription className="line-clamp-1">
             Agentic workflow environment.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <ScrollArea className="flex-1 min-h-0">
           <div className="flex flex-col gap-4 p-4 pb-4">
@@ -232,7 +232,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
             </Button>
           </form>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
