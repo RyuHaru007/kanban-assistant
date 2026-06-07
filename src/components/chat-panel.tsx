@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PrApproval } from "./pr-approval";
+import { TerminalOutput } from "./terminal-output";
 import { useChatStore } from "@/lib/store";
 import { useAuditStore } from "@/lib/audit-store";
 
@@ -152,6 +153,9 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                     if (part.type.startsWith('tool-')) {
                       const toolName = part.type.replace('tool-', '');
                       const toolCallId = part.toolCallId;
+                      if (toolName === 'executeSandboxBuild') {
+                        return <TerminalOutput key={toolCallId} isResolved={part.state === 'output-available'} />;
+                      }
 
                       if (toolName === 'proposePullRequest') {
                         return (
