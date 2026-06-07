@@ -159,6 +159,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                             key={toolCallId}
                             repo={part.input?.repo as string}
                             codeChanges={part.input?.codeChanges as string}
+                            fileChanges={part.input?.fileChanges as any}
                             status={(part.state === 'output-available' ? part.output : 'pending') as any}
                             onAction={(action) => {
                               addToolResult({ tool: toolName, toolCallId, output: action } as any);

@@ -55,7 +55,11 @@ You have access to the following tools:
         description: 'Proposes a Pull Request to a specific repository with code changes. This requires human approval.',
         inputSchema: z.object({
           repo: z.string().describe('The GitHub repository name (e.g., core-api-service).'),
-          codeChanges: z.string().describe('A summary or patch of the code changes being proposed.'),
+          fileChanges: z.array(z.object({
+            fileName: z.string().describe('The name of the file being changed.'),
+            originalCode: z.string().describe('The original code snippet before changes.'),
+            newCode: z.string().describe('The new code snippet after changes.'),
+          })).describe('An array of files changed in this pull request.'),
         }),
       }),
     },
