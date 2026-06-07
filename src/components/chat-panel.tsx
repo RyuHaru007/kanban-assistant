@@ -24,6 +24,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const initializedTicketId = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { saveChat, getChat } = useChatStore();
   const addAuditLog = useAuditStore((state) => state.addLog);
@@ -93,6 +94,14 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
       bottomRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages, chatStatus]);
+
+  // Auto-focus the input when the agent finishes generating a response
+  useEffect(() => {
+    if (!isLoading && open && inputRef.current) {
+      // Small timeout ensures the DOM has fully settled before focusing
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [isLoading, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,6 +239,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
             className="flex items-center gap-2"
           >
             <Input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask the AI to help with this ticket..."
