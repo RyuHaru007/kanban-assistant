@@ -12,8 +12,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { mockGithubRepos, mockConfluencePages, ConfluencePage } from "@/lib/mock-data"
-import { GitBranch, FileText, Zap } from "lucide-react"
+import { GitBranch, FileText, Zap, ShieldCheck, LayoutDashboard } from "lucide-react"
 import { useState } from "react"
+import Link from "next/link"
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,38 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <Link href="/" className="flex items-center gap-2 w-full">
+                    <LayoutDashboard suppressHydrationWarning className="h-4 w-4 text-primary" />
+                    <span>Kanban Board</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>System & Security</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <Link href="/audit" className="flex items-center gap-2 w-full">
+                    <ShieldCheck className="h-4 w-4 text-green-500" />
+                    <span>Trust & Audit Logs</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>GitHub Repositories</SidebarGroupLabel>
           <SidebarGroupContent>

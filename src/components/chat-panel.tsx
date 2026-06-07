@@ -11,6 +11,7 @@ import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PrApproval } from "./pr-approval";
 import { useChatStore } from "@/lib/store";
+import { useAuditStore } from "@/lib/audit-store";
 
 interface ChatPanelProps {
   ticket: JiraTicket | null;
@@ -20,7 +21,13 @@ interface ChatPanelProps {
 
 export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
   const [input, setInput] = useState('');
-  const { messages, sendMessage, setMessages, status, addToolResult, error } = useChat({
+  const initializedTicketId = useRef<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const { saveChat, getChat } = useChatStore();
+  const addAuditLog = useAuditStore((state) => state.addLog);
+
+  const { messages, sendMessage, setMessages, status: chatStatus, addToolResult, error } = useChat({
     id: ticket?.id ?? "default-chat",
     transport: new DefaultChatTransport({
       api: "/api/chat",
@@ -30,15 +37,25 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
       },
     }),
     onToolCall: ({ toolCall }) => {
-      // Optional logging or intercepting
+      if (toolCall.toolName === 'getConfluenceContext') {
+        addAuditLog({
+          actor: 'Agent',
+          actionType: 'RAG_RETRIEVAL',
+          status: 'Success',
+          details: { topic: (toolCall.args as any).topic },
+        });
+      } else if (toolCall.toolName === 'proposePullRequest') {
+        addAuditLog({
+          actor: 'Agent',
+          actionType: 'TOOL_CALL',
+          status: 'Pending_Human',
+          details: { tool: 'proposePullRequest', repo: (toolCall.args as any).repo },
+        });
+      }
     }
   });
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const initializedTicketId = useRef<string | null>(null);
-  const isLoading = status !== 'ready' && status !== 'error';
-  const { saveChat, getChat } = useChatStore();
+  const isLoading = chatStatus !== 'ready' && chatStatus !== 'error';
 
   // Initialize messages when a new ticket is selected
   useEffect(() => {
@@ -74,7 +91,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
-  }, [messages, status]);
+  }, [messages, chatStatus]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +162,12 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                             status={(part.state === 'output-available' ? part.output : 'pending') as any}
                             onAction={(action) => {
                               addToolResult({ tool: toolName, toolCallId, output: action } as any);
+                              addAuditLog({
+                                actor: 'Developer',
+                                actionType: 'HITL_APPROVAL',
+                                status: action === 'approved' ? 'Approved' : 'Rejected',
+                                details: { tool: 'proposePullRequest', decision: action, repo: part.input?.repo },
+                              });
                             }}
                           />
                         );
