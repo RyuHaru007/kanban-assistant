@@ -2,8 +2,10 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GitPullRequest, CheckCircle2, XCircle, Edit3, Send } from "lucide-react";
+import { GitPullRequest, CheckCircle2, XCircle, Edit3, Send, Code, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import { CodeDiffViewer } from "./code-diff-viewer";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,33 +58,59 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
       {status === 'pending' ? (
         <CardFooter className="flex flex-col gap-3 p-4 pt-0 border-t mt-4 border-border/50">
           {!modifyMode ? (
-            <div className="flex gap-2 w-full mt-4">
-              <Button
-                size="sm"
-                onClick={() => onAction('approved')}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Approve PR
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setModifyMode(true)}
-                className="flex-1"
-              >
-                <Edit3 className="mr-2 h-4 w-4" />
-                Modify Code
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => onAction('rejected')}
-                className="flex-1"
-              >
-                <XCircle className="mr-2 h-4 w-4" />
-                Reject
-              </Button>
+            <div className="flex flex-col gap-3 w-full mt-4">
+              <div className="flex gap-2 w-full">
+                <Button
+                  size="sm"
+                  onClick={() => onAction('approved')}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Approve PR
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setModifyMode(true)}
+                  className="flex-1"
+                >
+                  <Edit3 className="mr-2 h-4 w-4" />
+                  Modify Code
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onAction('rejected')}
+                  className="flex-1"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Reject
+                </Button>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger render={<div className="w-full" />}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        toast("Handing off to local...", {
+                          description: "Spinning up a localized Reltio Brain session in VS Code...",
+                          icon: <Code className="h-4 w-4 text-blue-400" />,
+                        });
+                      }}
+                      className="w-full opacity-60 border-dashed border-border/50 bg-secondary/30 hover:opacity-100 hover:bg-secondary/50 transition-all"
+                    >
+                      <Code className="mr-2 h-4 w-4 text-muted-foreground" />
+                      Open in Local IDE (Cursor / VS Code)
+                      <Lock className="ml-2 h-3 w-3 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>V2 Feature: Local context handoff via .reltio-context</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           ) : (
             <div className="flex flex-col gap-2 w-full mt-4">
