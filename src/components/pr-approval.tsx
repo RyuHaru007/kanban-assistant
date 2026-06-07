@@ -116,7 +116,7 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
             }`}>
             {status === 'approved' && 'Pull Request Approved & Created! 🎉'}
             {status === 'rejected' && 'Pull Request Rejected.'}
-            {status !== 'approved' && status !== 'rejected' && `Requested modification: "${status.replace('Modify request: ', '')}"`}
+            {status !== 'approved' && status !== 'rejected' && `Requested modification: "${String(status).replace('Modify request: ', '')}"`}
           </div>
         </CardFooter>
       )}

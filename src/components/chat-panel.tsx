@@ -169,6 +169,11 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                                 status: action === 'approved' ? 'Approved' : 'Rejected',
                                 details: { tool: 'proposePullRequest', decision: action, repo: part.input?.repo },
                               });
+                              
+                              // Force a round trip so the agent can reply!
+                              setTimeout(() => {
+                                sendMessage({ text: action.startsWith('Modify') ? action : `System: PR was ${action}` } as any);
+                              }, 100);
                             }}
                           />
                         );
