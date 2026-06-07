@@ -42,14 +42,14 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
           actor: 'Agent',
           actionType: 'RAG_RETRIEVAL',
           status: 'Success',
-          details: { topic: (toolCall.args as any).topic },
+          details: { topic: (toolCall.args as any)?.topic || 'Unknown topic' },
         });
       } else if (toolCall.toolName === 'proposePullRequest') {
         addAuditLog({
           actor: 'Agent',
           actionType: 'TOOL_CALL',
           status: 'Pending_Human',
-          details: { tool: 'proposePullRequest', repo: (toolCall.args as any).repo },
+          details: { tool: 'proposePullRequest', repo: (toolCall.args as any)?.repo || 'Unknown repo' },
         });
       }
     }
