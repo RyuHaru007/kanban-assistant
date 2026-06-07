@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PrApproval } from "./pr-approval";
+import { useChatStore } from "@/lib/store";
 
 interface ChatPanelProps {
   ticket: JiraTicket | null;
@@ -34,26 +35,46 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const initializedTicketId = useRef<string | null>(null);
   const isLoading = status !== 'ready' && status !== 'error';
+  const { saveChat, getChat } = useChatStore();
 
-  // Clear messages when a new ticket is selected
+  // Initialize messages when a new ticket is selected
   useEffect(() => {
-    if (open && ticket) {
-      setMessages([
-        {
-          id: "system-init",
-          role: "assistant",
-          parts: [{ type: "text", text: `Hi! I'm your AI context assistant. I can help you with ${ticket.id}: "${ticket.title}". What would you like to do? I can look up Confluence docs, draft a plan, or even propose a PR.` }],
-        },
-      ] as any);
+    if (open && ticket && initializedTicketId.current !== ticket.id) {
+      initializedTicketId.current = ticket.id;
+      const savedMessages = getChat(ticket.id);
+      
+      if (savedMessages && savedMessages.length > 0) {
+        setMessages(savedMessages);
+      } else {
+        setMessages([
+          {
+            id: "system-init",
+            role: "assistant",
+            parts: [{ type: "text", text: `Hi! I'm your AI context assistant. I can help you with ${ticket.id}: "${ticket.title}". What would you like to do? I can look up Confluence docs, draft a plan, or even propose a PR.` }],
+          },
+        ] as any);
+      }
     }
-  }, [ticket, open, setMessages]);
+  }, [ticket, open, setMessages, getChat]);
+
+  // Save messages to store whenever they change
+  useEffect(() => {
+    if (ticket && messages.length > 0) {
+      // Small optimization: only save if this is the currently initialized ticket
+      if (initializedTicketId.current === ticket.id) {
+        saveChat(ticket.id, messages);
+      }
+    }
+  }, [messages, ticket, saveChat]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
-  }, [messages]);
+  }, [messages, status]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +98,8 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-          <div className="flex flex-col gap-4 pb-4">
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="flex flex-col gap-4 p-4 pb-4">
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -161,6 +182,7 @@ export function ChatPanel({ ticket, open, onOpenChange }: ChatPanelProps) {
                 </div>
               </div>
             )}
+            <div ref={bottomRef} className="h-1" />
           </div>
         </ScrollArea>
 
