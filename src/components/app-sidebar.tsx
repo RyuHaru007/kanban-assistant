@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Sidebar,
   SidebarContent,
@@ -9,10 +11,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { mockGithubRepos, mockConfluencePages } from "@/lib/mock-data"
+import { mockGithubRepos, mockConfluencePages, ConfluencePage } from "@/lib/mock-data"
 import { GitBranch, FileText, Zap } from "lucide-react"
+import { useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 
 export function AppSidebar() {
+  const [selectedPage, setSelectedPage] = useState<ConfluencePage | null>(null);
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -52,8 +64,15 @@ export function AppSidebar() {
               {mockConfluencePages.map((page) => (
                 <SidebarMenuItem key={page.id}>
                   <SidebarMenuButton>
-                    <a href="#" className="flex items-center gap-2 w-full">
-                      <FileText className="h-4 w-4" />
+                    <a 
+                      href="#" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedPage(page);
+                      }}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <FileText suppressHydrationWarning className="h-4 w-4" />
                       <span className="truncate">{page.title}</span>
                     </a>
                   </SidebarMenuButton>
@@ -63,6 +82,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <Dialog open={!!selectedPage} onOpenChange={(open) => !open && setSelectedPage(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-blue-500/10 rounded-full">
+                <FileText suppressHydrationWarning className="h-5 w-5 text-blue-500" />
+              </div>
+              <DialogTitle>{selectedPage?.title}</DialogTitle>
+            </div>
+            <DialogDescription className="font-mono text-xs">
+              ID: {selectedPage?.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 p-4 bg-muted rounded-md text-sm leading-relaxed border border-border/50 text-foreground">
+            {selectedPage?.content}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   )
 }
