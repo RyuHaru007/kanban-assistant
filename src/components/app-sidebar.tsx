@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { mockGithubRepos, mockConfluencePages, ConfluencePage } from "@/lib/mock-data"
-import { GitBranch, FileText, Zap, ShieldCheck, LayoutDashboard } from "lucide-react"
+import { GitBranch, FileText, ShieldCheck, LayoutDashboard } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import {
@@ -23,6 +23,19 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 
+import { ReltioBrainLogo } from '@/components/reltio-brain-logo';
+
+export function BrandHeader() {
+  return (
+    <div className="flex items-center gap-3 px-4 py-2">
+      <div className="p-1.5 bg-blue-600 text-white rounded-md">
+        <ReltioBrainLogo className="w-6 h-6" />
+      </div>
+      <span className="font-bold text-lg tracking-tight">Reltio AI</span>
+    </div>
+  );
+}
+
 export function AppSidebar() {
   const [selectedPage, setSelectedPage] = useState<ConfluencePage | null>(null);
 
@@ -30,8 +43,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 px-4 py-2">
-          <Zap className="h-6 w-6 text-blue-500" />
-          <span className="font-bold text-lg tracking-tight">Enterprise AI Hub</span>
+          <BrandHeader />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -97,8 +109,8 @@ export function AppSidebar() {
               {mockConfluencePages.map((page) => (
                 <SidebarMenuItem key={page.id}>
                   <SidebarMenuButton>
-                    <a 
-                      href="#" 
+                    <a
+                      href="#"
                       onClick={(e) => {
                         e.preventDefault();
                         setSelectedPage(page);
