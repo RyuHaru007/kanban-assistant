@@ -37,7 +37,7 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
       </CardHeader>
       <CardContent className="p-4 text-sm max-h-[60vh] overflow-y-auto">
         <p className="font-medium mb-3">Code Changes Overview:</p>
-        
+
         {fileChanges && fileChanges.length > 0 ? (
           <div className="flex flex-col gap-4">
             {fileChanges.map((file, idx) => (
@@ -95,7 +95,7 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
                       variant="secondary"
                       onClick={() => {
                         toast("Handing off to local...", {
-                          description: "Spinning up a localized Reltio Brain session in VS Code...",
+                          description: "Spinning up a localized AI Hub session in VS Code...",
                           icon: <Code className="h-4 w-4 text-blue-400" />,
                         });
                         onAction('handoff');
@@ -108,7 +108,7 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>V2 Feature: Local context handoff via .reltio-context</p>
+                    <p>V2 Feature: Local context handoff via .enterprise-ai-hub-context</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -125,9 +125,9 @@ export function PrApproval({ repo, codeChanges, fileChanges, status, onAction }:
                 <Button size="sm" variant="ghost" onClick={() => setModifyMode(false)}>
                   Cancel
                 </Button>
-                <Button 
-                  size="sm" 
-                  disabled={!modifyText.trim()} 
+                <Button
+                  size="sm"
+                  disabled={!modifyText.trim()}
                   onClick={() => onAction(`Modify request: ${modifyText}`)}
                 >
                   <Send className="mr-2 h-4 w-4" />
